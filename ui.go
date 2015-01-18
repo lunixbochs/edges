@@ -109,6 +109,18 @@ func redraw(board []byte, cx, cy int, path []*P) {
 	termbox.Flush()
 }
 
+func getMarkCh() rune {
+	switch ev := termbox.PollEvent(); ev.Type {
+	case termbox.EventKey:
+		if ev.Key == termbox.KeyEsc {
+		} else if ev.Key == termbox.KeyCtrlC {
+		} else if ev.Ch != 0 {
+			return ev.Ch
+		}
+	}
+	return 0
+}
+
 func main() {
 	if len(os.Args) > 1 {
 		maxLen, _ = strconv.Atoi(os.Args[1])
@@ -124,6 +136,7 @@ func main() {
 	y := start.y
 	path := []*P{&P{x, y}}
 	var undoStack [][]*P
+	marks := make(map[rune][]*P)
 	active := true
 	for {
 		origin := &P{x, y}
@@ -154,6 +167,24 @@ func main() {
 					path = undoStack[end]
 					undoStack = undoStack[:end]
 				}
+				continue
+			case 'm':
+				if ch := getMarkCh(); ch != 0 {
+					marked := make([]*P, len(path))
+					copy(marked, path)
+					marks[ch] = marked
+				}
+				continue
+			case '\'':
+				if ch := getMarkCh(); ch != 0 {
+					marked, ok := marks[ch]
+					if ok {
+						undoStack = append(undoStack, path)
+						active = false
+						path = marked
+					}
+				}
+				continue
 			default:
 				origin = nil
 			}
