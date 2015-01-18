@@ -61,7 +61,7 @@ func redraw(board []byte, cx, cy int, path []*P) {
 		iters := 0
 	Loop:
 		for {
-			for _, p := range path[1:] {
+			for i, p := range path[1:] {
 				iters++
 				x += p.x
 				y += p.y
@@ -73,6 +73,9 @@ func redraw(board []byte, cx, cy int, path []*P) {
 					cell.Fg = termbox.ColorWhite
 					cell.Bg = termbox.ColorRed
 					break Loop
+				}
+				if i == 0 && cell.Ch == ' ' {
+					cell.Ch = '+'
 				}
 				cell.Bg = bg
 			}
